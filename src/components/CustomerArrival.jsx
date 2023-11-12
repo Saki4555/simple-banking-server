@@ -3,18 +3,18 @@ import { useState, useEffect } from "react";
 import Bank from "./bank";
 import CompletedCustomer from "./CompletedCustomer";
 import CustomerQueue from "./CustomerQueue";
-import man from '../assets/man.png';
-import man2 from '../assets/man2.png';
-import man3 from '../assets/man3.png';
-import man4 from '../assets/man4.png';
+import man from "../assets/man.png";
+import man2 from "../assets/man2.png";
+import man3 from "../assets/man3.png";
+import man4 from "../assets/man4.png";
 
-export function CaludeBank() {
+export function CustomerArrival() {
   const [queue, setQueue] = useState([]);
-
-  
 
   const [completed, setCompleted] = useState([]);
   const [isServerBusy, setIsServerBusy] = useState(false);
+
+  const [idHandler, setIdHandler] = useState(1);
 
   const [serviceTaking, setServiceTaking] = useState({});
   // (Math.floor(Math.random()*1000) + 2000)
@@ -27,46 +27,45 @@ export function CaludeBank() {
         ...prev,
         {
           // id: Date.now(),
-          id: queue.length + completed.length + 1,
+          // id: queue.length + completed.length + 1,
+          id: idHandler,
+
           arriveTime: new Date(),
-          img: mans[Math.floor(Math.random()*4)],
+          img: mans[Math.floor(Math.random() * 4)],
           // serviceTime: 1000 + Math.floor(Math.random() * 7000)
-          serviceTime: Math.floor(Math.random()*5000) + 4000,
+          serviceTime: Math.floor(Math.random() * 5000) + 4000,
         },
       ]);
-    }, Math.floor(Math.random()*5000));
+      setIdHandler((prev) => prev + 1);
+    }, Math.floor(Math.random() * 5000));
 
     return () => clearInterval(arriveInterval);
-  }, [completed.length,  queue.length]);
+  }, [idHandler]);
 
   useEffect(() => {
     if (!isServerBusy && queue.length > 0) {
       setIsServerBusy(true);
 
-      
       const currentCustomer = queue[0];
-      
+
       setServiceTaking(currentCustomer);
       setQueue((prevQueue) => prevQueue.slice(1));
+      const servedTime = new Date();
 
+      const waitingTime = parseInt((servedTime - currentCustomer.arriveTime) / 1000);
 
-   setTimeout(() => {
-        const servedTime = new Date();
-        
-        const waitingTime =
-          (servedTime - currentCustomer.arriveTime) / 1000;
-
+      setTimeout(() => {
         setCompleted((prevCompleted) => [
           ...prevCompleted,
-          { ...currentCustomer, waitingTime },
+          { ...currentCustomer, waitingTime, servedTime },
         ]);
 
-        console.log(currentCustomer.id, waitingTime);
-        console.log(
-          currentCustomer?.arriveTime?.toLocaleTimeString(),
-          " served time ",
-          servedTime?.toLocaleTimeString()
-        );
+        // console.log(currentCustomer.id, waitingTime);
+        // console.log(
+        //   currentCustomer?.arriveTime?.toLocaleTimeString(),
+        //   " served time ",
+        //   servedTime?.toLocaleTimeString()
+        // );
 
         // const remainingCustomers = queue.slice(1);
         // setQueue(remainingCustomers);
@@ -76,12 +75,10 @@ export function CaludeBank() {
 
       // return () => clearTimeout(timeOutId);
     }
-
-    
   }, [isServerBusy, queue]);
 
   return (
-    <div className="flex justify-between px-32 mt-10">
+    <div className="flex gap-10 px-32 pt-16">
       <CustomerQueue queue={queue}></CustomerQueue>
       <Bank isServerBusy={isServerBusy} serviceTaking={serviceTaking}></Bank>
 
